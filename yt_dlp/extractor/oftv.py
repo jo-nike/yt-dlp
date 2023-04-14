@@ -1,6 +1,6 @@
 from .common import InfoExtractor
 from .zype import ZypeIE
-from ..utils import traverse_obj
+from ..utils import traverse_obj, RegexNotFoundError
 
 
 class OfTVIE(InfoExtractor):
@@ -22,6 +22,18 @@ class OfTVIE(InfoExtractor):
             'view_count': 0,
             'creator': 'This is Fire'
         }
+    },
+    {
+        'url': 'https://of.tv/video/642725f616726a0001857982',
+        'info_dict': {
+            'id': '642725f616726a0001857982',
+            'ext': 'mp4',
+            'title': 'The Roast of Bert Kreischer',
+            'thumbnail': r're:^https?://.*\.jpg',
+            'average_rating': 0,
+            'view_count': 0,
+            'creator': ''
+        }
     }]
 
     def _real_extract(self, url):
@@ -29,7 +41,10 @@ class OfTVIE(InfoExtractor):
         webpage = self._download_webpage(url, video_id)
         info = next(ZypeIE.extract_from_webpage(self._downloader, url, webpage))
         info['_type'] = 'url_transparent'
-        info['creator'] = self._search_regex(r'<a[^>]+class=\"creator-name\"[^>]+>([^<]+)', webpage, 'creator')
+        try: 
+            info['creator'] = self._search_regex(r'<a[^>]+class=\"creator-name\"[^>]+>([^<]+)', webpage, 'creator')
+        except RegexNotFoundError:
+            info['creator'] = ''
         return info
 
 
